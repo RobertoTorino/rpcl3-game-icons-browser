@@ -1,0 +1,4 @@
+GameId,ArcadeGame,Eboot,Favorite,GameTitle,Genre,Icon0,Loader,Param,Pic1,Played,PSN,Format,Publisher,Region,ReleaseDate,Snd0,IconBlob,Have
+SCEEXE017,1,dev_hdd0/game/SCEEXE017/EBOOT.BIN,0,Mobile Suit Gundam Extreme vs Maxi Boost,Arcade,dev_hdd0/game/SCEEXE000/ICON0.PNG,rpcs3.exe,dev_hdd0/game/SCEEXE000/PARAM.SFO,dev_hdd0/game/SCEEXE000/PIC1.PNG,0,1,NAMCO357,NAMCO,CN,2016,dev_hdd0/game/SCEEXE000/SND0.AT3,,0
+SCEEXE018,1,dev_hdd0/game/SCEEXE018/EBOOT.BIN,0,Mobile Suit Gundam Extreme Full Boost,Arcade,dev_hdd0/game/SCEEXE000/ICON0.PNG,rpcs3.exe,dev_hdd0/game/SCEEXE000/PARAM.SFO,dev_hdd0/game/SCEEXE000/PIC1.PNG,0,1,NAMCO357,NAMCO,CN,2014,dev_hdd0/game/SCEEXE000/SND0.AT3,,0
+SCEEXE019,1,dev_hdd0/game/SCEEXE019/EBOOT.BIN,0,Mobile Suit Gundam Extreme vs,Arcade,dev_hdd0/game/SCEEXE000/ICON0.PNG,rpcs3.exe,dev_hdd0/game/SCEEXE000/PARAM.SFO,dev_hdd0/game/SCEEXE000/PIC1.PNG,0,1,NAMCO357,NAMCO,CN,2010,dev_hdd0/game/SCEEXE000/SND0.AT3,,0
