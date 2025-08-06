@@ -24,7 +24,8 @@ def create_placeholder_image():
     text = "No Image"
     try:
         font = ImageFont.load_default()
-        w, h = draw.textsize(text, font=font)
+        bbox = draw.textbbox((0, 0), text, font=font)
+        w, h = bbox[2] - bbox[0], bbox[3] - bbox[1]
         draw.text(((128 - w) / 2, (85 - h) / 2), text, fill="white", font=font)
     except Exception:
         draw.text((32, 32), text, fill="white")
@@ -149,11 +150,12 @@ class GameIconBrowser(tk.Tk):
                                      command=lambda _: self.apply_filters())
         region_menu.pack(side="left", padx=5, pady=3)
 
+    def clear_search(self):
         self.search_var.set("")
-        self.arcade_var.set(False)  # Optionally clear filter
-        self.psn_var.set(False)     # Optionally clear filter
-        self.region_var.set("All")  # Optionally clear filter
-        self.apply_filters()        # This will show all games
+        self.arcade_var.set(False)
+        self.psn_var.set(False)
+        self.region_var.set("All")
+        self.apply_filters()
 
     def update_info_label(self, total=None):
         if total is None:
