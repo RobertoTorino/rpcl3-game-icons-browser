@@ -10,3 +10,11 @@ Features:
 
 Release
 - rpcl3gib.exe: original EXE
+
+
+Clearing search box
+Arcade var
+PSN var
+Region var
+Apply filters
+Fail to allocate bitmap
