@@ -1,0 +1,13 @@
+/.idea/
+
+*.spec
+
+/_python/
+
+/dist/
+
+/build/
+
+sql.txt
+github_release.ps1
+/.github/workflows/old.yaml

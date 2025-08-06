@@ -1,0 +1,56 @@
+name: CI Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: |
+          pip install pillow pyinstaller
+
+      - name: Build executable
+        run: |
+          pyinstaller --onefile --windowed ^
+            --icon "rpcl3_media\\app.ico" ^
+            --add-data "games.db;." ^
+            --name "rpcl3gib_${{ github.ref_name }}" ^
+            display_app.py
+        shell: cmd
+
+      - name: Download UPX
+        run: |
+          curl -L -o upx.zip https://github.com/upx/upx/releases/download/v5.0.1/upx-5.0.1-win64.zip
+          unzip upx.zip
+        shell: bash
+
+      - name: Compress EXE with UPX
+        run: |
+          ./upx-5.0.1-win64/upx.exe --best --lzma --force dist/*.exe
+        shell: bash
+
+      - name: Create Release and Upload Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*.exe
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
