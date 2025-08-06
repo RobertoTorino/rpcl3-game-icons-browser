@@ -2,11 +2,24 @@ import io
 import os
 import sqlite3
 import sys
+import traceback
 import tkinter as tk
 from datetime import datetime
 from tkinter import filedialog, messagebox, ttk
 
 from PIL import Image, ImageDraw, ImageFont, ImageTk
+
+
+def show_exception_and_exit(exc_type, exc_value, tb):
+    msg = "".join(traceback.format_exception(exc_type, exc_value, tb))
+    try:
+        import tkinter.messagebox
+        tkinter.messagebox.showerror("Fatal Error", msg)
+    except Exception:
+        print(msg)
+    sys.exit(1)
+
+sys.excepthook = show_exception_and_exit
 
 if getattr(sys, 'frozen', False):
     base_path = getattr(sys, '_MEIPASS', os.path.dirname(__file__))
@@ -100,8 +113,8 @@ class GameIconBrowser(tk.Tk):
 
         clear_btn = tk.Button(search_frame, text="Clear", command=self.clear_search,
                               bg=self.btn_bg, fg=self.btn_fg, activebackground="#555555", activeforeground="#ffffff",
-                              font=("Arial", 12), width=8, height=1)
-        clear_btn.pack(side='right', padx=(0, 8), pady=1, ipady=1)
+                              font=("Arial", 12, "bold"), width=8, height=1)
+        clear_btn.pack(side='right', pady=1, ipady=1)
 
         # Canvas for scrollable icons grid
         self.canvas = tk.Canvas(self, bg=self.bg_color, highlightthickness=0)
@@ -151,11 +164,18 @@ class GameIconBrowser(tk.Tk):
         region_menu.pack(side="left", padx=5, pady=3)
 
     def clear_search(self):
+        print("Clearing search box")
         self.search_var.set("")
+        print("Arcade var")
         self.arcade_var.set(False)
+        print("PSN var")
         self.psn_var.set(False)
+        print("Region var")
         self.region_var.set("All")
+        print("Apply filters")
         self.apply_filters()
+        print("Done")
+        self.update()  # Force redraw
 
     def update_info_label(self, total=None):
         if total is None:
