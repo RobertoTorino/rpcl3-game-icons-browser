@@ -76,6 +76,8 @@ class GameIconBrowser(tk.Tk):
         self.cursor = self.conn.cursor()
         self.minsize(1000, 700)
 
+        self.placeholder_imgtk = create_placeholder_image()
+
         # Dark theme colors
         self.bg_color = "#222222"
         self.fg_color = "#dddddd"
@@ -217,17 +219,23 @@ class GameIconBrowser(tk.Tk):
             frame.grid(row=idx // cols, column=idx % cols, padx=8, pady=8)
             frame.grid_propagate(False)
 
+
+            tk_img = None  # ensure it's always defined
+            use_placeholder = False
             if icon_blob:
                 try:
                     img = Image.open(io.BytesIO(icon_blob))
                     img.thumbnail((128, 85))
                     tk_img = ImageTk.PhotoImage(img)
                 except Exception:
-                    tk_img = create_placeholder_image()
+                    use_placeholder = True
             else:
-                tk_img = create_placeholder_image()
-            self.tk_images.append(tk_img)
+                use_placeholder = True
 
+            if use_placeholder:
+                tk_img = self.placeholder_imgtk
+            else:
+                self.tk_images.append(tk_img)
             tk.Label(frame, image=tk_img, width=128, height=85, bg=self.bg_color).pack()
             tk.Label(frame, text=game_id, font=("Arial", 10, "bold"),
                      bg=self.bg_color, fg=self.fg_color).pack()
