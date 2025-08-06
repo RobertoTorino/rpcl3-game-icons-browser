@@ -53,6 +53,7 @@ def save_icon(blob, game_id):
 class GameIconBrowser(tk.Tk):
     def __init__(self):
         super().__init__()
+        self.resizable(False, False)
         year = datetime.now().year
         title = f"RPCL3 Game Icon Browser - {chr(169)} {year} - Philip"
         self.title(title)
