@@ -97,6 +97,11 @@ class GameIconBrowser(tk.Tk):
                                font=("Arial", 12, "bold"), width=12, height=1)
         search_btn.pack(side='right', pady=1, ipady=1)
 
+        clear_btn = tk.Button(search_frame, text="Clear", command=self.clear_search,
+                              bg=self.btn_bg, fg=self.btn_fg, activebackground="#555555", activeforeground="#ffffff",
+                              font=("Arial", 12), width=8, height=1)
+        clear_btn.pack(side='right', padx=(0, 8), pady=1, ipady=1)
+
         # Canvas for scrollable icons grid
         self.canvas = tk.Canvas(self, bg=self.bg_color, highlightthickness=0)
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
@@ -143,6 +148,12 @@ class GameIconBrowser(tk.Tk):
         region_menu = ttk.OptionMenu(filter_frame, self.region_var, "All", *region_options,
                                      command=lambda _: self.apply_filters())
         region_menu.pack(side="left", padx=5, pady=3)
+
+        self.search_var.set("")
+        self.arcade_var.set(False)  # Optionally clear filter
+        self.psn_var.set(False)     # Optionally clear filter
+        self.region_var.set("All")  # Optionally clear filter
+        self.apply_filters()        # This will show all games
 
     def update_info_label(self, total=None):
         if total is None:
