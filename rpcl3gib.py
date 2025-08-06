@@ -147,12 +147,12 @@ class GameIconBrowser(tk.Tk):
         self.prev_btn = tk.Button(nav_frame, text="Previous", command=self.prev_page, state="disabled",
                                   bg=self.btn_bg, fg=self.btn_fg, activebackground="#555555",
                                   activeforeground="#ffffff",
-                                  font=("Arial", 10), width=12)
+                                  font=("Arial", 10, "bold"), width=12)
         self.prev_btn.pack(side="left", padx=5)
         self.next_btn = tk.Button(nav_frame, text="Next", command=self.next_page, state="disabled",
                                   bg=self.btn_bg, fg=self.btn_fg, activebackground="#555555",
                                   activeforeground="#ffffff",
-                                  font=("Arial", 10), width=12)
+                                  font=("Arial", 10, "bold"), width=12)
         self.next_btn.pack(side="right", padx=5)
 
         # Canvas for scrollable icons grid

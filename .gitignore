@@ -10,4 +10,4 @@
 
 sql.txt
 github_release.ps1
-/.github/workflows/old.yaml
+/local_build.ps1
