@@ -31,7 +31,7 @@ jobs:
             --icon "rpcl3_media\\app.ico" ^
             --add-data "games.db;." ^
             --name "rpcl3gib_${{ github.ref_name }}" ^
-            display_app.py
+            rpcl3gib.py
         shell: cmd
 
       - name: Download UPX
