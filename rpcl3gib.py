@@ -2,8 +2,8 @@ import io
 import os
 import sqlite3
 import sys
-import traceback
 import tkinter as tk
+import traceback
 from datetime import datetime
 from tkinter import filedialog, messagebox, ttk
 
@@ -19,6 +19,7 @@ def show_exception_and_exit(exc_type, exc_value, tb):
         print(msg)
     sys.exit(1)
 
+
 sys.excepthook = show_exception_and_exit
 
 if getattr(sys, 'frozen', False):
@@ -30,6 +31,7 @@ DB_FILE = os.path.join(base_path, 'games.db')
 
 print(f"Using DB file at: {DB_FILE}")
 print(f"DB exists? {os.path.exists(DB_FILE)}")
+
 
 def create_placeholder_image():
     img = Image.new('RGBA', (128, 85), (60, 60, 60, 255))  # reduced height
@@ -71,11 +73,9 @@ class GameIconBrowser(tk.Tk):
         year = datetime.now().year
         title = f"RPCL3 Game Icon Browser - {chr(169)} {year} - Philip"
         self.title(title)
-        self.games = None
         self.conn = sqlite3.connect(DB_FILE)
         self.cursor = self.conn.cursor()
         self.minsize(1000, 700)
-
         self.placeholder_imgtk = create_placeholder_image()
 
         # Dark theme colors
@@ -88,16 +88,16 @@ class GameIconBrowser(tk.Tk):
 
         self.configure(bg=self.bg_color)
 
-        # Title label on top, bigger font
+        # Title label
         title_label = tk.Label(self, text="Search on game id or game title",
                                font=("Arial", 16, "bold"), bg=self.bg_color, fg=self.fg_color)
         title_label.pack(padx=10, pady=(10, 1), anchor="w")
 
-        # Info label: total or found games count
+        # Info label
         self.info_label = tk.Label(self, text="", font=("Arial", 12), bg=self.bg_color, fg=self.fg_color)
         self.info_label.pack(padx=10, pady=(0, 10), anchor="w")
 
-        # Frame for search field and button side by side
+        # Search
         search_frame = tk.Frame(self, bg=self.bg_color)
         search_frame.pack(fill='x', padx=10, pady=(0, 10))
 
@@ -118,11 +118,47 @@ class GameIconBrowser(tk.Tk):
                               font=("Arial", 12, "bold"), width=8, height=1)
         clear_btn.pack(side='right', pady=1, ipady=1)
 
+        # Filter Frame
+        filter_frame = ttk.Frame(search_frame)
+        filter_frame.pack(side="left", padx=10)
+
+        self.arcade_var = tk.BooleanVar()
+        arcade_check = ttk.Checkbutton(filter_frame, text="Arcade", variable=self.arcade_var,
+                                       command=self.apply_filters)
+        arcade_check.pack(side="left", padx=5)
+
+        self.psn_var = tk.BooleanVar()
+        psn_check = ttk.Checkbutton(filter_frame, text="PSN", variable=self.psn_var, command=self.apply_filters)
+        psn_check.pack(side="left", padx=5)
+
+        self.region_var = tk.StringVar()
+        self.region_var.set("All")
+        region_options = ["All", "US", "EU", "JP", "AS", "KO", "CN", "UN"]
+        region_menu = ttk.OptionMenu(filter_frame, self.region_var, "All", *region_options,
+                                     command=lambda _: self.apply_filters())
+        region_menu.pack(side="left", padx=5, pady=3)
+
+        # PAGINATION STATE
+        self.page = 0
+        self.page_size = 100  # Adjust as desired
+
+        nav_frame = tk.Frame(self, bg=self.bg_color)
+        nav_frame.pack(fill='x', padx=10, pady=(0, 10))
+        self.prev_btn = tk.Button(nav_frame, text="Previous", command=self.prev_page, state="disabled",
+                                  bg=self.btn_bg, fg=self.btn_fg, activebackground="#555555",
+                                  activeforeground="#ffffff",
+                                  font=("Arial", 10), width=12)
+        self.prev_btn.pack(side="left", padx=5)
+        self.next_btn = tk.Button(nav_frame, text="Next", command=self.next_page, state="disabled",
+                                  bg=self.btn_bg, fg=self.btn_fg, activebackground="#555555",
+                                  activeforeground="#ffffff",
+                                  font=("Arial", 10), width=12)
+        self.next_btn.pack(side="right", padx=5)
+
         # Canvas for scrollable icons grid
         self.canvas = tk.Canvas(self, bg=self.bg_color, highlightthickness=0)
         self.scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
-
         style = ttk.Style()
         style.theme_use('default')
         style.configure("Vertical.TScrollbar", gripcount=0,
@@ -135,49 +171,33 @@ class GameIconBrowser(tk.Tk):
             "<Configure>",
             lambda e: self.canvas.configure(scrollregion=self.canvas.bbox("all"))
         )
-
         self.canvas.create_window((0, 0), window=self.scrollable_frame, anchor="nw")
         self.canvas.configure(yscrollcommand=self.scrollbar.set)
         self.canvas.pack(side="left", fill="both", expand=True)
         self.scrollbar.pack(side="right", fill="y")
         self.tk_images = []
 
-        # Filter Frame
-        filter_frame = ttk.Frame(search_frame)
-        filter_frame.pack(side="left", padx=10)
+        self.games = []
+        self.apply_filters()
 
-        # ArcadeGame Checkbox
-        self.arcade_var = tk.BooleanVar()
-        arcade_check = ttk.Checkbutton(filter_frame, text="Arcade", variable=self.arcade_var,
-                                       command=self.apply_filters)
-        arcade_check.pack(side="left", padx=5)
+    def next_page(self):
+        total_pages = max(1, (len(self.games) + self.page_size - 1) // self.page_size)
+        if self.page < total_pages - 1:
+            self.page += 1
+            self.display_results()
 
-        # PSN Checkbox
-        self.psn_var = tk.BooleanVar()
-        psn_check = ttk.Checkbutton(filter_frame, text="PSN", variable=self.psn_var, command=self.apply_filters)
-        psn_check.pack(side="left", padx=5)
-
-        # Region Dropdown
-        self.region_var = tk.StringVar()
-        self.region_var.set("All")  # Default value
-        region_options = ["All", "US", "EU", "JP", "AS", "KO", "CN", "UN"]
-        region_menu = ttk.OptionMenu(filter_frame, self.region_var, "All", *region_options,
-                                     command=lambda _: self.apply_filters())
-        region_menu.pack(side="left", padx=5, pady=3)
+    def prev_page(self):
+        if self.page > 0:
+            self.page -= 1
+            self.display_results()
 
     def clear_search(self):
-        print("Clearing search box")
         self.search_var.set("")
-        print("Arcade var")
         self.arcade_var.set(False)
-        print("PSN var")
         self.psn_var.set(False)
-        print("Region var")
         self.region_var.set("All")
-        print("Apply filters")
         self.apply_filters()
-        print("Done")
-        self.update()  # Force redraw
+        self.update()
 
     def update_info_label(self, total=None):
         if total is None:
@@ -185,43 +205,37 @@ class GameIconBrowser(tk.Tk):
             total = self.cursor.fetchone()[0]
         self.info_label.config(text=f"Total games found: {total}")
 
-    def search(self):
-        query = self.search_var.get().strip()
-        cursor = self.conn.cursor()
-        cursor.execute("""
-            SELECT GameId, GameTitle, IconBlob
-            FROM games
-            WHERE GameId LIKE ? OR GameTitle LIKE ?
-            ORDER BY GameTitle
-        """, (f'%{query}%', f'%{query}%'))
-        rows = cursor.fetchall()
-        self.display_results(rows)
-        self.update_info_label(len(rows))
-        return rows
+    def display_results(self):
+        rows = self.games if hasattr(self, "games") and self.games else []
+        count = len(rows)
+        total_pages = max(1, (count + self.page_size - 1) // self.page_size)
+        start = self.page * self.page_size
+        end = start + self.page_size
+        paged_rows = rows[start:end]
 
-    def display_results(self, rows):
+        self.prev_btn.config(state=("normal" if self.page > 0 else "disabled"))
+        self.next_btn.config(state=("normal" if self.page < total_pages - 1 else "disabled"))
+
         for widget in self.scrollable_frame.winfo_children():
             widget.destroy()
 
-        count = len(rows)
-        if count == 0:
+        if len(paged_rows) == 0:
             self.info_label.config(text="No games found.")
             return
 
-        self.info_label.config(text=f"Games found: {count}")
+        self.info_label.config(text=f"Games found: {count} (Page {self.page + 1} of {total_pages})")
         self.tk_images.clear()
 
         cols = 6
-        for idx, (game_id, title, icon_blob) in enumerate(rows):
+        for idx, (game_id, title, icon_blob) in enumerate(paged_rows):
             frame = tk.Frame(self.scrollable_frame, bd=1, relief="groove",
                              width=140, height=230, bg=self.bg_color, highlightbackground="#444444",
                              highlightcolor="#444444", highlightthickness=1)
             frame.grid(row=idx // cols, column=idx % cols, padx=8, pady=8)
             frame.grid_propagate(False)
 
-
-            tk_img = None  # ensure it's always defined
             use_placeholder = False
+            tk_img = None
             if icon_blob:
                 try:
                     img = Image.open(io.BytesIO(icon_blob))
@@ -235,7 +249,8 @@ class GameIconBrowser(tk.Tk):
             if use_placeholder:
                 tk_img = self.placeholder_imgtk
             else:
-                self.tk_images.append(tk_img)
+                self.tk_images.append(tk_img)  # Only real images need to be kept
+
             tk.Label(frame, image=tk_img, width=128, height=85, bg=self.bg_color).pack()
             tk.Label(frame, text=game_id, font=("Arial", 10, "bold"),
                      bg=self.bg_color, fg=self.fg_color).pack()
@@ -250,37 +265,43 @@ class GameIconBrowser(tk.Tk):
         query = "SELECT GameId, GameTitle, IconBlob FROM games WHERE 1==1"
         params = []
 
-        # Apply search filter
         search = self.search_var.get().strip()
         if search:
             query += " AND (GameId LIKE ? OR GameTitle LIKE ?)"
             search_term = f"%{search}%"
             params.extend([search_term, search_term])
 
-        # Apply ArcadeGame filter
         if self.arcade_var.get():
             query += " AND ArcadeGame = 1"
-
-        # Apply PSN filter
         if self.psn_var.get():
             query += " AND PSN = 1"
-
-        # Apply Region filter
         region = self.region_var.get()
         if region != "All":
             query += " AND Region = ?"
             params.append(region)
-
         self.cursor.execute(query, params)
         rows = self.cursor.fetchall()
-        self.games = rows  # Only fetch once
-
-        self.display_results(rows)
+        self.games = rows
+        self.page = 0
+        self.display_results()
         self.update_info_label(len(rows))
 
-    def refresh_icons(self, rows):
-        self.display_results(rows)
+    def search(self):
+        query = self.search_var.get().strip()
+        cursor = self.conn.cursor()
+        cursor.execute("""
+                       SELECT GameId, GameTitle, IconBlob
+                       FROM games
+                       WHERE GameId LIKE ?
+                          OR GameTitle LIKE ?
+                       ORDER BY GameTitle
+                       """, (f'%{query}%', f'%{query}%'))
+        rows = cursor.fetchall()
+        self.games = rows
+        self.page = 0
+        self.display_results()
         self.update_info_label(len(rows))
+        return rows
 
 
 if __name__ == "__main__":
